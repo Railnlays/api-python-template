@@ -6,7 +6,7 @@ from decouple import config
 from routers import healthz, hello_world
 
 app = FastAPI(
-    title="Menhir: api-python-template",
+    title="api-python-template",
     description=open("README.md", mode="r").read(),
 )
 
@@ -21,7 +21,7 @@ app.add_middleware(
 app.include_router(healthz.router)
 app.include_router(hello_world.router)
 
-if _name_ == "_main_":
+if __name__ == "__main__":
     uvicorn.run(
         "main:app",
         host="0.0.0.0",
