@@ -143,3 +143,5 @@ jobs:
           token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
       - name: Save DigitalOcean kubeconfig
         run: doctl kubernetes cluster kubeconfig save ${{ env.KUBERNETES_CLUSTER_NAME }}
+      - name: Get nodes
+        run: get nodes
