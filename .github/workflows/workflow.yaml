@@ -12,6 +12,7 @@ env:
   DOCKER_IMAGE_TAG: ${{ github.sha }}
   DEBIAN_VERSION: "bookworm"
   PROJECT_FOLDER: "app"
+  KUBERNETES_CLUSTER_NAME: "railnlays-dev"
 jobs:
   install-test-coverage:
     runs-on: ubuntu-latest
@@ -140,3 +141,5 @@ jobs:
         uses: digitalocean/action-doctl@v2
         with:
           token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+      - name: Save DigitalOcean kubeconfig
+        run: doctl kubernetes cluster kubeconfig save ${{ env.KUBERNETES_CLUSTER_NAME }}
