@@ -1,4 +1,4 @@
-name: CI - Workflow
+name: CICD - Workflow
 on:
   push:
     branches: [master, main]
@@ -11,12 +11,11 @@ env:
   DOCKER_IMAGE_NAME: ${{ github.event.repository.name }}
   DOCKER_IMAGE_TAG: ${{ github.sha }}
   DEBIAN_VERSION: "bookworm"
+  PROJECT_FOLDER: "app"
 jobs:
   install-test-coverage:
     runs-on: ubuntu-latest
     steps:
-      - name: Create Project Folder environment variable
-        run: echo "PROJECT_FOLDER=$(echo "${{ github.event.repository.name }}" | sed -e 's/package-python-//' -e 's/-/_/g')" >> $GITHUB_ENV
       - name: Checkout
         uses: actions/checkout@v4
       - name: Setup python versions
@@ -84,7 +83,7 @@ jobs:
   build-and-push-docker-image:
     runs-on: ubuntu-latest
     needs: [install-test-coverage]
-    if: contains(github.event.head_commit.message, 'publish')
+    if: contains(github.event.head_commit.message, 'cd run')
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -132,3 +131,12 @@ jobs:
             POETRY_VERSION=${{ env.POETRY_VERSION }}
             PYTHON_VERSION=${{ env.PYTHON_VERSION }}
             DEBIAN_VERSION=${{ env.DEBIAN_VERSION }}
+  deploy-in-do-dev-kubernetes:
+    runs-on: ubuntu-latest
+    needs: [build-and-push-docker-image]
+    if: "${{contains(github.event.head_commit.message, 'cd run') && contains(github.event.head_commit.message, 'DO') && contains(github.event.head_commit.message, 'DEV')}}"
+    steps:
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
