@@ -13,6 +13,8 @@ env:
   DEBIAN_VERSION: "bookworm"
   PROJECT_FOLDER: "app"
   KUBERNETES_CLUSTER_NAME: "railnlays-dev"
+  KUBERNETES_NAMESPACE: "api"
+  KUBERNETES_DEPLOYMENT: ${{ github.event.repository.name }}
 jobs:
   install-test-coverage:
     runs-on: ubuntu-latest
@@ -143,5 +145,7 @@ jobs:
           token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
       - name: Save DigitalOcean kubeconfig
         run: doctl kubernetes cluster kubeconfig save ${{ env.KUBERNETES_CLUSTER_NAME }}
-      - name: Get nodes
-        run: kubectl get nodes
+      - name: Deploy DO Kubernetes
+        run: kubectl set image deployment/${{ env.KUBERNETES_DEPLOYMENT }} ${{ env.KUBERNETES_DEPLOYMENT }}=${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_TAG }} -n ${{ env.KUBERNETES_NAMESPACE }}
+      - name: Verify deployment
+        run: kubectl rollout status deployment/${{ env.KUBERNETES_DEPLOYMENT }} -n ${{ env.KUBERNETES_NAMESPACE }}
